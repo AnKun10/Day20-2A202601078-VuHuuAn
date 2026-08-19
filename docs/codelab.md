@@ -138,7 +138,8 @@ Bạn hoàn thành khi:
 **Setup môi trường:**
 
 ```bash
-git clone <repo-url> && cd phase2-day5-multi-agent-lab
+git clone https://github.com/VinUni-AI20k/VinUni-AI20k-K3-Track3-Lab20-MultiAgent.git
+cd VinUni-AI20k-K3-Track3-Lab20-MultiAgent
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev,llm]"
 cp .env.example .env   # rồi điền API keys
