@@ -180,18 +180,19 @@
     </div>
     <div class="body">
       <div class="main">
-        <div class="card" style="background:#1f3d2f;border-color:#1f3d2f;">
-          <pre style="margin:0;font-size:2vmin;line-height:1.6;color:#cfe0d5;font-weight:600;white-space:pre-wrap;">User Query
-   |
-   v
-[Supervisor] --chưa có sources?------&gt; [Researcher] --sources + research_notes--+
-   ^  |                                                                         |
-   |  +--chưa có analysis?-----------&gt; [Analyst] -----analysis_notes------------+
-   |  |                                                                         |
-   |  +--đủ dữ liệu?-----------------&gt; [Writer] ------final_answer + citations  |
-   |  |                                                                         |
-   |  +--quá max_iterations?---------&gt; STOP (guardrail)                         |
-   +----------------------------------------------------------------------------+</pre>
+        <div class="card" style="background:#1f3d2f;border-color:#1f3d2f;display:flex;flex-direction:column;gap:1.2vmin;">
+          <div style="display:flex;align-items:center;gap:1.4vmin;">
+            <span style="font-size:2vmin;font-weight:800;color:#8ee0a6;background:rgba(142,224,166,.14);border:.3vmin solid #8ee0a6;border-radius:1.2vmin;padding:.9vmin 1.8vmin;white-space:nowrap;">User Query</span>
+            <span style="color:#e08a52;font-weight:900;font-size:2.4vmin;">→</span>
+            <span style="font-size:2vmin;font-weight:800;color:#fff;background:#e08a52;border-radius:1.2vmin;padding:.9vmin 1.8vmin;white-space:nowrap;">🧭 Supervisor</span>
+            <span style="font-size:1.8vmin;font-weight:600;color:#8fb3a0;">nhìn state → route · mỗi agent xong lại quay về Supervisor ↩</span>
+          </div>
+          <div style="display:grid;grid-template-columns:auto 1fr auto;gap:.6vmin 1.4vmin;align-items:center;font-size:1.95vmin;font-weight:600;color:#cfe0d5;">
+            <span style="color:#e08a52;font-weight:800;white-space:nowrap;">chưa có sources</span><span style="color:#5a7d6a;">→ 🔍 <b style="color:#fff;">Researcher</b></span><span style="color:#8fb3a0;white-space:nowrap;">ghi sources + research_notes</span>
+            <span style="color:#e08a52;font-weight:800;white-space:nowrap;">chưa có analysis</span><span style="color:#5a7d6a;">→ 🧠 <b style="color:#fff;">Analyst</b></span><span style="color:#8fb3a0;white-space:nowrap;">ghi analysis_notes</span>
+            <span style="color:#e08a52;font-weight:800;white-space:nowrap;">đủ dữ liệu</span><span style="color:#5a7d6a;">→ ✍️ <b style="color:#fff;">Writer</b></span><span style="color:#8fb3a0;white-space:nowrap;">final_answer + citations → END</span>
+            <span style="color:#ff9d9d;font-weight:800;white-space:nowrap;">quá max_iterations</span><span style="color:#ff9d9d;">→ 🛑 <b style="color:#ffb4b4;">STOP</b></span><span style="color:#8fb3a0;white-space:nowrap;">guardrail chống lặp vô hạn</span>
+          </div>
         </div>
         <div class="li"><span class="dot">•</span><span><b>Shared state</b>: một cấu trúc dữ liệu duy nhất — query, sources, research_notes, analysis_notes, final_answer, route_history</span></div>
         <div class="li"><span class="dot">•</span><span><b>Handoff</b>: mỗi agent ghi kết quả vào state rồi trả quyền về Supervisor</span></div>
