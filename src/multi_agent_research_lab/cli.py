@@ -3,6 +3,7 @@
 from typing import Annotated
 
 import typer
+from pydantic import ValidationError
 from rich.console import Console
 from rich.panel import Panel
 
@@ -22,6 +23,20 @@ def _init() -> None:
     configure_logging(settings.log_level)
 
 
+def _parse_query(query: str) -> ResearchQuery:
+    try:
+        return ResearchQuery(query=query)
+    except ValidationError as exc:
+        console.print(
+            Panel.fit(
+                f"Invalid query: {exc.errors()[0]['msg']}",
+                title="Input Error",
+                style="red",
+            )
+        )
+        raise typer.Exit(code=1) from exc
+
+
 @app.command()
 def baseline(
     query: Annotated[str, typer.Option("--query", "-q", help="Research query")],
@@ -29,7 +44,7 @@ def baseline(
     """Run a minimal single-agent baseline placeholder."""
 
     _init()
-    request = ResearchQuery(query=query)
+    request = _parse_query(query)
     state = ResearchState(request=request)
     state.final_answer = (
         "Baseline skeleton response. TODO(student): replace this with a real single-agent "
@@ -45,7 +60,7 @@ def multi_agent(
     """Run the multi-agent workflow skeleton."""
 
     _init()
-    state = ResearchState(request=ResearchQuery(query=query))
+    state = ResearchState(request=_parse_query(query))
     workflow = MultiAgentWorkflow()
     try:
         result = workflow.run(state)

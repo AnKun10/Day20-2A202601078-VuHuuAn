@@ -45,9 +45,9 @@ Gợi ý câu hỏi thiết kế:
 
 File gợi ý:
 
-- `agents/researcher.py`
-- `agents/analyst.py`
-- `agents/writer.py`
+- `src/multi_agent_research_lab/agents/researcher.py`
+- `src/multi_agent_research_lab/agents/analyst.py`
+- `src/multi_agent_research_lab/agents/writer.py`
 
 TODO(student): implement từng worker.
 
@@ -55,9 +55,9 @@ TODO(student): implement từng worker.
 
 File gợi ý:
 
-- `observability/tracing.py`
-- `evaluation/benchmark.py`
-- `evaluation/report.py`
+- `src/multi_agent_research_lab/observability/tracing.py`
+- `src/multi_agent_research_lab/evaluation/benchmark.py`
+- `src/multi_agent_research_lab/evaluation/report.py`
 
 Benchmark tối thiểu:
 
