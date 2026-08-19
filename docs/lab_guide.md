@@ -69,6 +69,46 @@ Benchmark tối thiểu:
 | Citation coverage | số claims có source / tổng claims chính |
 | Failure rate | số query fail / tổng query |
 
+## Troubleshooting
+
+### macOS: lỗi SSL certificate khi gọi API qua HTTPS (Tavily, OpenAI, ...)
+
+Triệu chứng: khi implement `SearchClient` (hoặc bất kỳ HTTPS call nào) trên macOS, bạn có thể gặp lỗi kiểu:
+
+```
+ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed:
+unable to get local issuer certificate
+```
+
+Nguyên nhân: Python cài từ python.org trên macOS **không dùng** certificate store của hệ điều hành, nên không tìm thấy CA bundle hợp lệ. Đây là lỗi môi trường, **không phải** do API key sai.
+
+Cách khắc phục (chọn 1 trong 3):
+
+1. **Chạy script cài certificate đi kèm Python** (nhanh nhất):
+
+   ```bash
+   /Applications/Python\ 3.12/Install\ Certificates.command
+   ```
+
+   (thay `3.12` bằng version Python của bạn)
+
+2. **Dùng `certifi` trong code** — thêm `certifi` vào dependencies, rồi tạo SSL context khi gọi HTTPS:
+
+   ```python
+   import certifi
+   import ssl
+   from urllib.request import urlopen
+
+   ssl_context = ssl.create_default_context(cafile=certifi.where())
+   urlopen(request, timeout=timeout, context=ssl_context)
+   ```
+
+3. **Set biến môi trường** trỏ tới CA bundle của certifi (không cần đổi code):
+
+   ```bash
+   export SSL_CERT_FILE=$(python -m certifi)
+   ```
+
 ## Exit ticket
 
 Mỗi nhóm trả lời 2 câu:
