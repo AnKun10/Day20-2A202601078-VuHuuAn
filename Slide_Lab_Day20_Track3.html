@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài Lab số 20 — Multi-Agent Research System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; overflow:hidden; background:#12271d;
+               font-family:'Be Vietnam Pro', system-ui, sans-serif; }
+  button { font-family:inherit; cursor:pointer; border:none; }
+  button:focus-visible { outline:.4vmin solid #e08a52; outline-offset:.4vmin; }
+
+  #track { display:flex; height:100vh; transition:transform .5s cubic-bezier(.7,0,.2,1); }
+  @media (prefers-reduced-motion: reduce) { #track { transition:none; } }
+
+  .slide { flex:0 0 100vw; height:100vh; display:flex; flex-direction:column;
+           padding:5vmin 6.5vmin; overflow:hidden; }
+  .light { background:#f6f5f1; color:#173625; }
+  .dark  { background:radial-gradient(120% 120% at 50% 0%,#265139 0%,#173625 55%,#10231a 100%);
+           color:#f4f1e9; }
+  .center { align-items:center; justify-content:center; text-align:center; }
+
+  .eyebrow { font-size:2.3vmin; letter-spacing:.42em; text-transform:uppercase;
+             color:#e08a52; font-weight:700; }
+  .h1 { font-size:5.6vmin; font-weight:900; line-height:1.04; }
+  .sub { font-size:2.8vmin; font-weight:600; color:#5a635a; margin-top:1vmin; }
+  .dark .sub { color:#cfe0d5; }
+
+  .head { display:flex; align-items:center; gap:2vmin; flex:0 0 auto; }
+  .badge { font-size:2.1vmin; font-weight:800; letter-spacing:.2em; background:#e08a52;
+           color:#fff; padding:1vmin 2.2vmin; border-radius:99px; white-space:nowrap; }
+  .badge.grey { background:#5a635a; }
+  .clock { margin-left:auto; font-size:2.3vmin; font-weight:800; color:#8a938a; white-space:nowrap; }
+
+  .body { flex:1; min-height:0; display:flex; gap:4vmin; margin-top:2.6vmin; }
+  .main { flex:1.45; min-width:0; display:flex; flex-direction:column; gap:1.8vmin; overflow:auto; }
+  .side { flex:0 0 31vw; display:flex; flex-direction:column; gap:1.8vmin; }
+
+  .card { background:#fff; border:.4vmin solid #e3e6de; border-radius:2.2vmin;
+          padding:2.2vmin 2.6vmin; }
+  .card h4 { margin:0; font-size:2.5vmin; font-weight:800; color:#173625; }
+  .card p  { margin:.6vmin 0 0; font-size:2vmin; font-weight:500; color:#5a635a; line-height:1.4; }
+
+  .li { display:flex; align-items:flex-start; gap:1.6vmin; font-size:2.7vmin;
+        font-weight:600; line-height:1.35; }
+  .li b { color:#2e6f4f; }
+  .dot { color:#e08a52; font-weight:900; flex:0 0 auto; }
+
+  .pill { display:inline-flex; align-self:flex-start; align-items:center; gap:1.3vmin;
+          background:#fbeee4; border:.4vmin solid #e08a52; color:#a8531f;
+          font-size:2.3vmin; font-weight:700; padding:1.2vmin 2.4vmin; border-radius:99px; }
+
+  .chips { display:flex; flex-wrap:wrap; gap:1.1vmin; }
+  .chip { font-size:2vmin; font-weight:700; background:#fff; border:.35vmin solid #d5d9d1;
+          color:#173625; padding:.9vmin 1.8vmin; border-radius:99px; }
+  .chip.on { background:#2e6f4f; border-color:#2e6f4f; color:#fff; }
+
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:1.6vmin; }
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:1.8vmin; }
+  .grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:1.4vmin; }
+  .grid5 { display:grid; grid-template-columns:repeat(5,1fr); gap:1.4vmin; }
+
+  table.cmp { border-collapse:collapse; width:100%; font-size:1.85vmin; }
+  table.cmp th, table.cmp td { border:.25vmin solid #e3e6de; padding:1.1vmin 1.4vmin; text-align:left; }
+  table.cmp th { background:#eef4f0; color:#173625; font-weight:800; }
+  table.cmp td { font-weight:500; color:#3d463f; }
+  table.cmp td b { color:#2e6f4f; }
+
+  /* timer */
+  .timer { display:flex; flex-direction:column; align-items:center; background:#fff;
+           border:.5vmin solid #e3e6de; border-radius:3vmin; padding:2.6vmin 2.8vmin;
+           box-shadow:0 3vmin 6vmin rgba(20,40,30,.12); box-sizing:border-box;
+           min-width:0; overflow:hidden; }
+  .dark .timer { background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.22); box-shadow:none; }
+  .t-label { font-size:1.9vmin; letter-spacing:.3em; text-transform:uppercase;
+             color:#8a938a; font-weight:700; }
+  .t-num { font-size:clamp(6vmin, 12vmin, 14vmin); font-weight:900; line-height:1;
+           font-variant-numeric:tabular-nums; color:#173625; margin:.8vmin 0;
+           width:100%; text-align:center; white-space:nowrap; }
+  .dark .t-num { color:#f4f1e9; }
+  .t-num.warn { color:#c62f2f; }
+  .t-btns { display:flex; gap:1.5vmin; margin-top:1.6vmin; flex-wrap:wrap; justify-content:center; }
+  .t-btns button { font-size:2.4vmin; font-weight:800; padding:1.3vmin 3.2vmin; border-radius:99px; }
+  .t-start { background:#2e6f4f; color:#fff; }
+  .t-reset { background:#e9ebe6; color:#5a635a; }
+
+  /* timer trên slide break (full-bleed center) */
+  .center .timer { width:min(68vmin, 90vw); max-width:90vw; padding:3.2vmin 5vmin;
+                   margin-left:auto; margin-right:auto; }
+  .center .t-num { font-size:clamp(8vmin, 13vmin, 15vmin); }
+
+  /* nav */
+  .nav { position:fixed; top:50%; transform:translateY(-50%); width:6vmin; height:9vmin;
+         border-radius:1.5vmin; background:transparent; color:#2e6f4f; font-size:4vmin;
+         font-weight:800; display:flex; align-items:center; justify-content:center;
+         opacity:.08; z-index:20; transition:opacity .2s, background .2s, color .2s; }
+  .nav:hover, .nav:focus-visible {
+         opacity:1; background:rgba(23,54,37,.88); color:#fff; }
+  .nav.p { left:.4vmin; } .nav.n { right:.4vmin; }
+  #dots { position:fixed; bottom:2.2vmin; left:50%; transform:translateX(-50%);
+          display:flex; gap:1.1vmin; align-items:center; z-index:20; }
+  #dots button { height:1.3vmin; width:1.3vmin; border-radius:99px;
+                 background:rgba(255,255,255,.4); transition:all .3s; padding:0; }
+  #dots button.on { width:4.5vmin; background:#e08a52; }
+  .light #dots button { background:rgba(23,54,37,.25); }
+</style>
+</head>
+<body>
+
+<div id="track">
+
+  <!-- 1 — MỞ ĐẦU -->
+  <section class="slide dark center">
+    <div class="eyebrow" style="margin-bottom:3vmin;">Khởi động buổi học</div>
+    <div style="font-size:13vmin;font-weight:900;line-height:.98;">BÀI LAB SỐ 20</div>
+    <div style="width:16vmin;height:.7vmin;background:#e08a52;border-radius:99px;margin:5vmin 0;"></div>
+    <div style="font-size:4.4vmin;font-weight:500;color:#cfe0d5;">
+      Chủ đề: <b style="color:#fff;font-weight:800;">Multi-Agent Research System</b>
+    </div>
+    <div style="font-size:2.8vmin;font-weight:600;color:#8fb3a0;margin-top:3vmin;letter-spacing:.05em;">
+      Supervisor · Researcher · Analyst · Writer — khi nào nhiều agent thực sự tốt hơn một agent?
+    </div>
+    <div style="font-size:2.4vmin;font-weight:700;color:#e08a52;margin-top:2.4vmin;">
+      Hình thức: bài lab cá nhân · 1 người / 1 MSSV
+    </div>
+  </section>
+
+  <!-- 2 — QR -->
+  <section class="slide dark center">
+    <div class="eyebrow" style="margin-bottom:2vmin;">Repo &amp; Codelab</div>
+    <div style="font-size:5.4vmin;font-weight:900;line-height:1.05;margin-bottom:2.4vmin;">QUÉT MÃ ĐỂ MỞ REPO LAB 20</div>
+
+    <div style="margin-top:2.4vmin;background:#fff;border-radius:3vmin;padding:2.4vmin;box-shadow:0 3vmin 7vmin rgba(0,0,0,.35);">
+      <img id="qr" alt="QR mở repo Lab 20" style="display:block;width:36vmin;height:36vmin;object-fit:contain;">
+    </div>
+    <div id="qr-url" style="margin-top:2.4vmin;font-size:2.5vmin;font-weight:700;color:#cfe0d5;"></div>
+    <div style="margin-top:1.2vmin;font-size:2.1vmin;font-weight:600;color:#8a9d90;">Hướng dẫn chi tiết: <code>docs/codelab.md</code> &amp; <code>docs/lab_guide.md</code> trong repo</div>
+  </section>
+
+  <!-- 3 — BỐN CÂU HỎI -->
+  <section class="slide light">
+    <div class="head">
+      <div>
+        <div class="h1">BỐN CÂU HỎI TRỌNG TÂM</div>
+        <div class="sub">Từ single-agent baseline đến hệ multi-agent có số liệu chứng minh</div>
+      </div>
+    </div>
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:1vmin;margin-top:1vmin;">
+      <div style="display:flex;align-items:center;gap:3vmin;border-top:.3vmin solid #e3e6de;padding:2.2vmin .5vmin;">
+        <span style="font-size:4.4vmin;font-weight:900;color:#2e6f4f;min-width:8vmin;">01</span>
+        <span style="font-size:3.1vmin;font-weight:600;">Vì sao một agent "làm tất cả" dễ <b>loãng context</b> khi bài toán phức tạp?</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:3vmin;border-top:.3vmin solid #e3e6de;padding:2.2vmin .5vmin;">
+        <span style="font-size:4.4vmin;font-weight:900;color:#2e6f4f;min-width:8vmin;">02</span>
+        <span style="font-size:3.1vmin;font-weight:600;"><b>Supervisor</b> dựa vào đâu trong shared state để quyết định gọi agent nào tiếp theo?</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:3vmin;border-top:.3vmin solid #e3e6de;padding:2.2vmin .5vmin;">
+        <span style="font-size:4.4vmin;font-weight:900;color:#2e6f4f;min-width:8vmin;">03</span>
+        <span style="font-size:3.1vmin;font-weight:600;">Làm sao chặn workflow <b>lặp vô hạn</b> và đốt token — guardrail tối thiểu là gì?</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:3vmin;border-top:.3vmin solid #e3e6de;border-bottom:.3vmin solid #e3e6de;padding:2.2vmin .5vmin;">
+        <span style="font-size:4.4vmin;font-weight:900;color:#2e6f4f;min-width:8vmin;">04</span>
+        <span style="font-size:3.1vmin;font-weight:600;">Multi-agent có <b>luôn thắng</b> single-agent không? Đo bằng metric nào?</span>
+      </div>
+    </div>
+    <div class="pill">🎯 Hết buổi hôm nay: hệ multi-agent chạy end-to-end + benchmark report so sánh với baseline (latency · cost · quality)</div>
+  </section>
+
+  <!-- 4 — KIẾN TRÚC -->
+  <section class="slide light">
+    <div class="head">
+      <div>
+        <div class="h1">KIẾN TRÚC BẠN SẼ XÂY</div>
+        <div class="sub">Supervisor điều phối · shared state chuyền qua từng agent · LangGraph workflow</div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="main">
+        <div class="card" style="background:#1f3d2f;border-color:#1f3d2f;">
+          <pre style="margin:0;font-size:2vmin;line-height:1.6;color:#cfe0d5;font-weight:600;white-space:pre-wrap;">User Query
+   |
+   v
+[Supervisor] --chưa có sources?------&gt; [Researcher] --sources + research_notes--+
+   ^  |                                                                         |
+   |  +--chưa có analysis?-----------&gt; [Analyst] -----analysis_notes------------+
+   |  |                                                                         |
+   |  +--đủ dữ liệu?-----------------&gt; [Writer] ------final_answer + citations  |
+   |  |                                                                         |
+   |  +--quá max_iterations?---------&gt; STOP (guardrail)                         |
+   +----------------------------------------------------------------------------+</pre>
+        </div>
+        <div class="li"><span class="dot">•</span><span><b>Shared state</b>: một cấu trúc dữ liệu duy nhất — query, sources, research_notes, analysis_notes, final_answer, route_history</span></div>
+        <div class="li"><span class="dot">•</span><span><b>Handoff</b>: mỗi agent ghi kết quả vào state rồi trả quyền về Supervisor</span></div>
+        <div class="li"><span class="dot">•</span><span><b>Guardrail</b>: max_iterations, timeout, retry — cầu dao tự ngắt chống vòng lặp vô hạn</span></div>
+      </div>
+      <div class="side">
+        <table class="cmp">
+          <tr><th></th><th>Single-agent</th><th>Multi-agent</th></tr>
+          <tr><td>Context</td><td>Dễ loãng</td><td><b>Mỗi role gọn</b></td></tr>
+          <tr><td>Latency</td><td><b>Thấp hơn</b></td><td>Cao hơn (nhiều call)</td></tr>
+          <tr><td>Cost</td><td><b>Rẻ hơn</b></td><td>Đắt hơn</td></tr>
+          <tr><td>Debug</td><td>Khó tách lỗi</td><td><b>Trace từng bước</b></td></tr>
+        </table>
+        <div class="pill" style="font-size:1.9vmin;">💡 Trade-off này chính là thứ bạn sẽ benchmark cuối buổi</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 — LUỒNG BUỔI LAB -->
+  <section class="slide light">
+    <div class="head">
+      <div>
+        <div class="h1">Nội dung buổi lab</div>
+        <div class="sub"><b style="color:#2e6f4f;">5 bước · 240 phút</b> · làm cá nhân · điền code vào các điểm <code>TODO(student)</code></div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:1.4vmin;">
+      <div class="grid5">
+        <div style="background:#eef4f0;border:.4vmin solid #cfe0d5;border-radius:1.8vmin;padding:1.8vmin 1.4vmin;text-align:center;">
+          <div style="font-size:1.8vmin;font-weight:800;letter-spacing:.16em;color:#2e6f4f;">BƯỚC 1</div>
+          <div style="font-size:2.1vmin;font-weight:800;margin-top:.6vmin;">Setup &amp; Baseline</div>
+          <div style="font-size:1.9vmin;font-weight:700;color:#8a938a;margin-top:.4vmin;">0–30'</div>
+        </div>
+        <div style="background:#eef4f0;border:.4vmin solid #2e6f4f;border-radius:1.8vmin;padding:1.8vmin 1.4vmin;text-align:center;">
+          <div style="font-size:1.8vmin;font-weight:800;letter-spacing:.16em;color:#2e6f4f;">BƯỚC 2</div>
+          <div style="font-size:2.1vmin;font-weight:800;margin-top:.6vmin;">Supervisor &amp; Workflow</div>
+          <div style="font-size:1.9vmin;font-weight:700;color:#8a938a;margin-top:.4vmin;">30–90'</div>
+        </div>
+        <div style="background:#eef4f0;border:.4vmin solid #2e6f4f;border-radius:1.8vmin;padding:1.8vmin 1.4vmin;text-align:center;">
+          <div style="font-size:1.8vmin;font-weight:800;letter-spacing:.16em;color:#2e6f4f;">BƯỚC 3</div>
+          <div style="font-size:2.1vmin;font-weight:800;margin-top:.6vmin;">Worker Agents</div>
+          <div style="font-size:1.9vmin;font-weight:700;color:#8a938a;margin-top:.4vmin;">90–150'</div>
+        </div>
+        <div style="background:#fbeee4;border:.4vmin solid #e5b691;border-radius:1.8vmin;padding:1.8vmin 1.4vmin;text-align:center;">
+          <div style="font-size:1.8vmin;font-weight:800;letter-spacing:.16em;color:#a8531f;">BƯỚC 4</div>
+          <div style="font-size:2.1vmin;font-weight:800;margin-top:.6vmin;">Trace &amp; Benchmark</div>
+          <div style="font-size:1.9vmin;font-weight:700;color:#8a938a;margin-top:.4vmin;">150–210'</div>
+        </div>
+        <div style="background:#fbeee4;border:.4vmin solid #e08a52;border-radius:1.8vmin;padding:1.8vmin 1.4vmin;text-align:center;">
+          <div style="font-size:1.8vmin;font-weight:800;letter-spacing:.16em;color:#a8531f;">BƯỚC 5</div>
+          <div style="font-size:2.1vmin;font-weight:800;margin-top:.6vmin;">Peer Review &amp; Exit Ticket</div>
+          <div style="font-size:1.9vmin;font-weight:700;color:#8a938a;margin-top:.4vmin;">210–240'</div>
+        </div>
+      </div>
+
+      <div style="background:#1f3d2f;color:#f4f1e9;border-radius:1.8vmin;padding:1.8vmin 2.2vmin;display:flex;align-items:center;justify-content:space-between;gap:2vmin;">
+        <div style="font-size:2.2vmin;font-weight:800;">Luồng: <span style="color:#8ee0a6;">Baseline</span> → <span style="color:#8ee0a6;">Workflow</span> → <span style="color:#8ee0a6;">Agents</span> → <span style="color:#e5b691;">Benchmark</span> → <span style="color:#e08a52;">Peer Review</span> · nghỉ 10' sau Bước 3</div>
+        <div style="font-size:2.4vmin;font-weight:900;white-space:nowrap;">TỔNG 240'</div>
+      </div>
+    </div>
+
+    <div class="pill">📝 Starter repo đã có sẵn khung production-grade (config · schema · test · CI) — bạn chỉ điền logic vào <code>TODO(student)</code>, mỗi TODO có docstring hướng dẫn</div>
+  </section>
+
+  <!-- 6 — BƯỚC 1: SETUP & BASELINE -->
+  <section class="slide light">
+    <div class="head">
+      <span class="badge">BƯỚC 1</span>
+      <span class="h1">SETUP &amp; SINGLE-AGENT BASELINE</span>
+      <span class="clock">30 phút</span>
+    </div>
+    <div class="body">
+      <div class="main">
+        <div class="card">
+          <h4>💻 Setup môi trường</h4>
+          <p><code>git clone https://github.com/VinUni-AI20k/VinUni-AI20k-K3-Track3-Lab20-MultiAgent.git</code><br>
+          <code>cd VinUni-AI20k-K3-Track3-Lab20-MultiAgent</code><br>
+          <code>python -m venv .venv &amp;&amp; source .venv/bin/activate</code><br>
+          <code>pip install -e ".[dev,llm]"</code><br>
+          <code>cp .env.example .env</code> — rồi điền API keys<br>
+          <code>make test</code> — 4 tests phải pass ngay từ đầu</p>
+        </div>
+        <div class="li"><span class="dot">•</span><span>Implement <code>services/llm_client.py</code>: gọi LLM thật, trả structured output</span></div>
+        <div class="li"><span class="dot">•</span><span>Sửa command <code>baseline</code> trong <code>cli.py</code> → <code>make run-baseline</code> in câu trả lời thật</span></div>
+        <div class="li"><span class="dot">•</span><span>Ghi lại <b>latency + token usage</b> của baseline để so sánh cuối buổi</span></div>
+        <div class="chips">
+          <span class="chip on">LangGraph</span>
+          <span class="chip on">OpenAI API</span>
+          <span class="chip">Tavily (tùy chọn — có mock)</span>
+          <span class="chip">LangSmith / Langfuse</span>
+        </div>
+      </div>
+      <div class="side">
+        <div class="timer" data-secs="1800">
+          <div class="t-label">Thời gian</div>
+          <div class="t-num">30:00</div>
+          <div class="t-btns"><button class="t-start">START</button><button class="t-reset">RESET</button></div>
+        </div>
+        <div class="card" style="background:#eef4f0;border-color:#cfe0d5;">
+          <h4 style="color:#2e6f4f;">Tìm việc cần làm</h4>
+          <p><code>grep -R "TODO(student)" -n src tests docs</code> — mỗi TODO có docstring + test tự kiểm tra.</p>
+        </div>
+        <div class="card" style="background:#fbeee4;border-color:#e5b691;">
+          <h4 style="color:#a8531f;">⚠️ macOS</h4>
+          <p style="color:#8a4a1c;"><code>SSLCertVerificationError</code> → xem Troubleshooting trong <code>docs/lab_guide.md</code> (certifi / Install Certificates.command)</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 — BƯỚC 2: SUPERVISOR & WORKFLOW -->
+  <section class="slide light">
+    <div class="head">
+      <span class="badge">BƯỚC 2</span>
+      <span class="h1">SUPERVISOR &amp; LANGGRAPH WORKFLOW</span>
+      <span class="clock">60 phút</span>
+    </div>
+    <div class="body">
+      <div class="main">
+        <div class="card" style="background:#1f3d2f;border-color:#1f3d2f;">
+          <pre style="margin:0;font-size:1.85vmin;line-height:1.5;color:#cfe0d5;font-weight:600;white-space:pre-wrap;">state chưa có sources        -&gt; route "researcher"
+state chưa có analysis_notes -&gt; route "analyst"
+state đủ dữ liệu             -&gt; route "writer"
+iteration &gt;= max_iterations  -&gt; STOP (guardrail)</pre>
+        </div>
+        <div class="li"><span class="dot">•</span><span><b>Routing policy</b> — <code>agents/supervisor.py</code>: nhìn state hiện tại, quyết định bước tiếp theo</span></div>
+        <div class="li"><span class="dot">•</span><span><b>Build graph</b> — <code>graph/workflow.py</code>: node supervisor/researcher/analyst/writer + conditional edges</span></div>
+        <div class="li"><span class="dot">•</span><span><b>Stop condition</b>: dùng <code>state.record_route()</code> + <code>max_iterations</code> từ <code>Settings</code></span></div>
+        <div class="li"><span class="dot">•</span><span>Kết quả: <code>make run-multi</code> hết <code>StudentTodoError</code> ở workflow · <code>route_history</code> đúng thứ tự</span></div>
+      </div>
+      <div class="side">
+        <div class="timer" data-secs="3600">
+          <div class="t-label">Thời gian</div>
+          <div class="t-num">60:00</div>
+          <div class="t-btns"><button class="t-start">START</button><button class="t-reset">RESET</button></div>
+        </div>
+        <div class="card" style="background:#fbeee4;border-color:#e5b691;">
+          <h4 style="color:#a8531f;">⚠️ Bug kinh điển</h4>
+          <p style="color:#8a4a1c;">Supervisor ↔ Researcher lặp vô hạn vì quên tăng <code>iteration</code> hoặc thiếu stop condition — đây là lý do guardrail tồn tại.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 — BƯỚC 3: WORKER AGENTS -->
+  <section class="slide light">
+    <div class="head">
+      <span class="badge">BƯỚC 3</span>
+      <span class="h1">WORKER AGENTS: RESEARCHER · ANALYST · WRITER</span>
+      <span class="clock">60 phút</span>
+    </div>
+    <div class="body">
+      <div class="main">
+        <div class="grid3">
+          <div class="card"><h4>🔍 Researcher</h4><p>Gọi <code>SearchClient</code> (Tavily hoặc mock) → ghi <code>sources</code> + <code>research_notes</code> vào state</p></div>
+          <div class="card"><h4>🧠 Analyst</h4><p>Đọc <code>research_notes</code> → sinh <code>analysis_notes</code>: so sánh, đánh giá độ tin cậy nguồn</p></div>
+          <div class="card"><h4>✍️ Writer</h4><p>Tổng hợp thành <code>final_answer</code> có <b>citation</b> trỏ về <code>sources</code></p></div>
+        </div>
+        <div class="li"><span class="dot">•</span><span>Mỗi agent <b>một vai trò rõ ràng</b>, không overlap — role design là learning outcome chính</span></div>
+        <div class="li"><span class="dot">•</span><span>Handoff qua <b>shared state</b>: agent làm xong ghi vào state rồi trả quyền về Supervisor</span></div>
+        <div class="li"><span class="dot">•</span><span>Kết quả: chạy end-to-end ra <code>final_answer</code> có trích dẫn · state đủ dữ liệu trung gian để debug</span></div>
+      </div>
+      <div class="side">
+        <div class="timer" data-secs="3600">
+          <div class="t-label">Thời gian</div>
+          <div class="t-num">60:00</div>
+          <div class="t-btns"><button class="t-start">START</button><button class="t-reset">RESET</button></div>
+        </div>
+        <div class="card" style="background:#eef4f0;border-color:#cfe0d5;">
+          <h4 style="color:#2e6f4f;">Không có Tavily key?</h4>
+          <p>Implement mock search trong <code>services/search_client.py</code> — trả nguồn giả lập có cấu trúc giống thật, đủ để test toàn pipeline.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BREAK -->
+  <section class="slide light center">
+    <div class="eyebrow" style="margin-bottom:2vmin;">Sau Bước 3 · Worker Agents</div>
+    <div class="h1" style="font-size:7vmin;">BREAK TIME</div>
+    <div class="sub" style="margin-top:2vmin;color:#5a635a;">Nghỉ <b style="color:#2e6f4f;">10 phút</b> · rồi sang Bước 4 · Trace &amp; Benchmark</div>
+    <div class="timer" data-secs="600" style="margin-top:4vmin;">
+      <div class="t-label">Break · 10'</div>
+      <div class="t-num">10:00</div>
+      <div class="t-btns"><button class="t-start">START</button><button class="t-reset">RESET</button></div>
+    </div>
+  </section>
+
+  <!-- 9 — BƯỚC 4: TRACE & BENCHMARK -->
+  <section class="slide light">
+    <div class="head">
+      <span class="badge">BƯỚC 4</span>
+      <span class="h1">TRACE &amp; BENCHMARK</span>
+      <span class="clock">60 phút</span>
+    </div>
+    <div class="body">
+      <div class="main">
+        <div class="li"><span class="dot">•</span><span><b>Tracing</b> — <code>observability/tracing.py</code> với LangSmith/Langfuse: xem từng agent step, token, latency — "hộp đen máy bay" của workflow</span></div>
+        <div class="li"><span class="dot">•</span><span><b>Benchmark</b> — <code>evaluation/benchmark.py</code> + <code>report.py</code>: chạy cùng bộ query qua <b>cả baseline và multi-agent</b></span></div>
+        <div class="li"><span class="dot">•</span><span><b>Report</b> — viết <code>reports/benchmark_report.md</code> với tối thiểu 3 metric:</span></div>
+        <div class="grid3">
+          <div class="card"><h4>⏱️ Latency</h4><p>Thời gian end-to-end mỗi cách làm</p></div>
+          <div class="card"><h4>💰 Cost</h4><p>Token usage / chi phí API</p></div>
+          <div class="card"><h4>⭐ Quality</h4><p>Rubric + citation coverage + failure rate</p></div>
+        </div>
+      </div>
+      <div class="side">
+        <div class="timer" data-secs="3600">
+          <div class="t-label">Thời gian</div>
+          <div class="t-num">60:00</div>
+          <div class="t-btns"><button class="t-start">START</button><button class="t-reset">RESET</button></div>
+        </div>
+        <div class="card" style="background:#fbeee4;border-color:#e5b691;">
+          <h4 style="color:#a8531f;">💡 Multi-agent thua baseline?</h4>
+          <p style="color:#8a4a1c;"><b>Bình thường!</b> Ghi nhận vào report và phân tích trade-off — đây chính là learning outcome, không phải lỗi.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 — BƯỚC 5: PEER REVIEW -->
+  <section class="slide light">
+    <div class="head">
+      <span class="badge" style="background:#e08a52;">BƯỚC 5</span>
+      <span class="h1">PEER REVIEW &amp; EXIT TICKET</span>
+      <span class="clock">30 phút</span>
+    </div>
+    <div class="body">
+      <div class="main">
+        <div class="pill">Cuối buổi · <b>30'</b> · review chéo theo <code>docs/peer_review_rubric.md</code> — 5 tiêu chí × 0–2 điểm</div>
+        <div class="li"><span class="dot">1</span><span><b>0–20'</b> — Đổi bài với bạn bên cạnh: chấm role design · shared state · guardrails · trace · benchmark report</span></div>
+        <div class="li"><span class="dot">2</span><span><b>20–30'</b> — Exit ticket (trong <code>docs/lab_guide.md</code>): trả lời 2 câu hỏi</span></div>
+        <div class="grid2">
+          <div class="card" style="background:#eef4f0;border-color:#cfe0d5;">
+            <h4 style="color:#2e6f4f;">✅ Khi nào NÊN multi-agent?</h4>
+            <p>Nêu 1 case cụ thể + lý do dựa trên số liệu benchmark của chính bạn</p>
+          </div>
+          <div class="card" style="background:#fbeee4;border-color:#e5b691;">
+            <h4 style="color:#a8531f;">❌ Khi nào KHÔNG nên?</h4>
+            <p>Nêu 1 case mà single-agent đủ tốt — rẻ hơn, nhanh hơn, đơn giản hơn</p>
+          </div>
+        </div>
+      </div>
+      <div class="side">
+        <div class="timer" data-secs="1800">
+          <div class="t-label">Thời gian</div>
+          <div class="t-num">30:00</div>
+          <div class="t-btns"><button class="t-start">START</button><button class="t-reset">RESET</button></div>
+        </div>
+        <div class="card">
+          <h4>Tinh thần review</h4>
+          <p>Chấm bằng rubric + số liệu, không chấm bằng "trông có vẻ hay". Feedback cụ thể, chỉ vào file/dòng.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 — CHECKLIST -->
+  <section class="slide light">
+    <div class="head">
+      <div>
+        <div class="h1">CHECKLIST TRƯỚC KHI NỘP</div>
+        <div class="sub">4 artefact · xem mục "Nộp bài" trong <code>docs/codelab.md</code></div>
+      </div>
+    </div>
+    <div style="flex:1;min-height:0;display:flex;gap:2.4vmin;margin-top:2.4vmin;">
+      <div style="flex:1.2;background:#fff;border:.4vmin solid #cfe0d5;border-radius:2.4vmin;padding:2.6vmin;">
+        <h4 style="margin:0 0 1.6vmin;font-size:2.3vmin;color:#2e6f4f;">🛠️ Code &amp; chất lượng</h4>
+        <div class="li" style="font-size:2.1vmin;margin-bottom:1.2vmin;"><span class="dot">☐</span><span><code>make lint</code> + <code>make test</code> pass</span></div>
+        <div class="li" style="font-size:2.1vmin;margin-bottom:1.2vmin;"><span class="dot">☐</span><span><code>make run-baseline</code> &amp; <code>make run-multi</code> chạy end-to-end, hết <code>StudentTodoError</code></span></div>
+        <div class="li" style="font-size:2.1vmin;"><span class="dot">☐</span><span><code>route_history</code> thể hiện đúng thứ tự routing · có stop condition</span></div>
+      </div>
+      <div style="flex:1;background:#fff;border:.4vmin solid #e5b691;border-radius:2.4vmin;padding:2.6vmin;">
+        <h4 style="margin:0 0 1.6vmin;font-size:2.3vmin;color:#a8531f;">📊 Bằng chứng</h4>
+        <div class="li" style="font-size:2.1vmin;margin-bottom:1.2vmin;"><span class="dot">☐</span><span>Trace evidence: screenshot / link LangSmith·Langfuse ≥1 lần chạy multi-agent</span></div>
+        <div class="li" style="font-size:2.1vmin;margin-bottom:1.2vmin;"><span class="dot">☐</span><span><code>reports/benchmark_report.md</code>: latency · cost · quality + 1 đoạn failure mode</span></div>
+        <div class="li" style="font-size:2.1vmin;"><span class="dot">☐</span><span>Exit ticket: 2 câu hỏi nên / không nên multi-agent</span></div>
+      </div>
+      <div style="flex:.9;background:#1f3d2f;color:#f4f1e9;border-radius:2.4vmin;padding:2.6vmin;">
+        <div style="font-size:1.9vmin;letter-spacing:.28em;text-transform:uppercase;color:#a7c4b2;font-weight:700;margin-bottom:1.4vmin;">Nộp bài</div>
+        <div style="font-size:2.2vmin;font-weight:800;">Cá nhân · 1 MSSV</div>
+        <p style="font-size:1.9vmin;color:#cfe0d5;font-weight:600;margin-top:1vmin;line-height:1.4;">Link GitHub repo cá nhân + trace + report + exit ticket</p>
+        <div style="font-size:1.9vmin;color:#8ee0a6;font-weight:800;margin-top:1.4vmin;">Hạn nộp: theo thông báo của coach / LMS</div>
+      </div>
+    </div>
+    <div class="pill" style="margin-top:2.4vmin;">🔑 Không hard-code API key trong code — key chỉ nằm trong <code>.env</code> (đã gitignore)</div>
+  </section>
+
+  <!-- 12 — NHẮC LẠI -->
+  <section class="slide light">
+    <div class="head">
+      <span class="badge grey">NHẮC LẠI</span>
+      <span class="h1">THỨ TỰ LÀM BÀI</span>
+    </div>
+    <div class="body">
+      <div class="main">
+        <div style="font-size:2.8vmin;font-weight:700;color:#2e6f4f;">Baseline → Supervisor/Workflow → Worker Agents → nghỉ → Trace/Benchmark → Peer Review</div>
+        <div class="li"><span class="dot">•</span><span><b>Bước 1 (30')</b> — setup + LLM client + baseline chạy thật, ghi số liệu</span></div>
+        <div class="li"><span class="dot">•</span><span><b>Bước 2 (60')</b> — routing policy + LangGraph + stop condition</span></div>
+        <div class="li"><span class="dot">•</span><span><b>Bước 3 (60')</b> — Researcher · Analyst · Writer với shared state</span></div>
+        <div class="li"><span class="dot">•</span><span><b>Bước 4 (60')</b> — tracing + benchmark + <code>reports/benchmark_report.md</code></span></div>
+        <div class="li"><span class="dot">•</span><span><b>Bước 5 (30')</b> — peer review theo rubric + exit ticket</span></div>
+        <div class="pill">📩 Nộp cá nhân · 1 MSSV · đủ 4 artefact theo checklist</div>
+      </div>
+      <div class="side">
+        <div class="card">
+          <h4>Ưu tiên trên lớp</h4>
+          <p>Đừng sa lầy vào prompt tuning ở Bước 3 — cần đến được Bước 4 để có số liệu benchmark, vì report chiếm phần lớn giá trị bài nộp.</p>
+        </div>
+        <div class="card" style="background:#eef4f0;border-color:#cfe0d5;">
+          <h4 style="color:#2e6f4f;">Kẹt thì làm gì?</h4>
+          <p>Đọc docstring tại TODO → chạy test tương ứng → xem <code>docs/lab_guide.md</code> → hỏi coach.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 — REFERENCES -->
+  <section class="slide dark center">
+    <div class="eyebrow">Tài liệu &amp; tham khảo</div>
+    <div style="font-size:4.6vmin;font-weight:900;line-height:1.15;margin:2vmin 0 3vmin;max-width:80vmin;">
+      Multi-agent không phải lúc nào cũng thắng — <span style="color:#e08a52;">đo mới biết</span>, đừng tin cảm tính
+    </div>
+    <div class="chips" style="justify-content:center;">
+      <span class="chip">LangGraph Docs</span>
+      <span class="chip">LangSmith Tracing</span>
+      <span class="chip">Langfuse Docs</span>
+      <span class="chip">Tavily Search API</span>
+      <span class="chip">Anthropic — Building Effective Agents</span>
+      <span class="chip">OpenAI Structured Outputs</span>
+      <span class="chip">docs/lab_guide.md · docs/codelab.md</span>
+    </div>
+  </section>
+
+</div>
+
+<button class="nav p" id="prev" aria-label="Slide trước">‹</button>
+<button class="nav n" id="next" aria-label="Slide sau">›</button>
+<div id="dots"></div>
+
+<script>
+(function () {
+  var track  = document.getElementById('track');
+  var slides = Array.prototype.slice.call(track.children);
+  var N = slides.length, cur = 0;
+
+  track.style.width = (N * 100) + 'vw';
+
+  /* ---------- QR repo ---------- */
+  var REPO_URL = 'https://github.com/VinUni-AI20k/VinUni-AI20k-K3-Track3-Lab20-MultiAgent';
+  var qrEl = document.getElementById('qr');
+  qrEl.src = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(REPO_URL);
+  document.getElementById('qr-url').textContent = REPO_URL.replace('https://', '');
+
+  /* ---------- điều hướng ---------- */
+  var dotsWrap = document.getElementById('dots');
+  var dotEls = [];
+  for (var i = 0; i < N; i++) {
+    (function (n) {
+      var b = document.createElement('button');
+      b.setAttribute('aria-label', 'Slide ' + (n + 1));
+      b.onclick = function () { go(n); };
+      dotsWrap.appendChild(b); dotEls.push(b);
+    })(i);
+  }
+
+  function go(n) {
+    cur = Math.max(0, Math.min(N - 1, n));
+    track.style.transform = 'translateX(-' + (cur * 100) + 'vw)';
+    for (var i = 0; i < N; i++) dotEls[i].className = (i === cur ? 'on' : '');
+    var dark = slides[cur].classList.contains('dark');
+    dotsWrap.style.filter = dark ? 'none' : 'invert(0)';
+    dotEls.forEach(function (d, i) {
+      if (i !== cur) d.style.background = dark ? 'rgba(255,255,255,.4)' : 'rgba(23,54,37,.22)';
+      else d.style.background = '#e08a52';
+    });
+  }
+
+  document.getElementById('prev').onclick = function () { go(cur - 1); };
+  document.getElementById('next').onclick = function () { go(cur + 1); };
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(cur + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(cur - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End') { e.preventDefault(); go(N - 1); }
+  });
+
+  /* ---------- chuông báo hết giờ ---------- */
+  var ac = null;
+  function arm() {
+    try {
+      var C = window.AudioContext || window.webkitAudioContext;
+      ac = ac || new C();
+      if (ac.state === 'suspended') ac.resume();
+    } catch (e) {}
+  }
+  function chime() {
+    try {
+      if (!ac) return;
+      [0, 0.55, 1.1].forEach(function (t, i) {
+        var o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'sine'; o.frequency.value = (i === 2 ? 660 : 880);
+        o.connect(g); g.connect(ac.destination);
+        var st = ac.currentTime + t;
+        g.gain.setValueAtTime(0.0001, st);
+        g.gain.exponentialRampToValueAtTime(0.5, st + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001, st + 0.45);
+        o.start(st); o.stop(st + 0.5);
+      });
+    } catch (e) {}
+  }
+
+  /* ---------- timers: mỗi cái chạy độc lập, không reset khi chuyển slide ---------- */
+  function fmt(s) {
+    var m = Math.floor(s / 60), x = s % 60;
+    return String(m).padStart(2, '0') + ':' + String(x).padStart(2, '0');
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.timer'), function (box) {
+    var total = parseInt(box.getAttribute('data-secs'), 10);
+    var left = total, running = false;
+    var num = box.querySelector('.t-num');
+    var bStart = box.querySelector('.t-start');
+    var bReset = box.querySelector('.t-reset');
+
+    function paint() {
+      num.textContent = fmt(left);
+      num.className = 't-num' + (left <= 300 ? ' warn' : '');
+      bStart.textContent = running ? 'PAUSE' : 'START';
+    }
+    bStart.onclick = function () { arm(); running = !running; paint(); };
+    bReset.onclick = function () { running = false; left = total; paint(); };
+
+    setInterval(function () {
+      if (running && left > 0) {
+        left--;
+        if (left === 0) { running = false; chime(); }
+        paint();
+      }
+    }, 1000);
+
+    paint();
+  });
+
+  go(0);
+})();
+</script>
+</body>
+</html>
