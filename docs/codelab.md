@@ -55,6 +55,49 @@ overview:
   reassurance: "Starter repo đã có sẵn khung production-grade (config, schema, test, CI). Bạn chỉ cần điền logic vào các điểm TODO(student) — mỗi điểm đều có docstring hướng dẫn, và test sẽ báo rõ khi bạn hoàn thành đúng."
 ---
 
+## Kiến trúc tổng thể
+
+Hai cách làm bạn sẽ so sánh trong lab:
+
+```mermaid
+flowchart LR
+    subgraph A["Single-agent baseline"]
+        Q1([User Query]) --> S1["Một agent làm tất cả:<br/>search + phân tích + viết"]
+        S1 --> A1([Answer])
+    end
+
+    subgraph B["Multi-agent workflow"]
+        Q2([User Query]) --> SUP{{"Supervisor<br/>(Router)"}}
+        SUP -->|"chưa có sources"| R["Researcher<br/>→ sources, research_notes"]
+        SUP -->|"chưa có analysis"| AN["Analyst<br/>→ analysis_notes"]
+        SUP -->|"đủ dữ liệu"| W["Writer<br/>→ final_answer"]
+        R --> SUP
+        AN --> SUP
+        W --> DONE([Answer + Trace])
+        SUP -->|"max_iterations"| STOP([Stop guardrail])
+    end
+```
+
+Luồng một lần chạy multi-agent điển hình (shared state chuyền qua từng bước):
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant S as Supervisor
+    participant R as Researcher
+    participant A as Analyst
+    participant W as Writer
+
+    U->>S: query
+    S->>R: route (state chưa có sources)
+    R->>S: state + sources + research_notes
+    S->>A: route (chưa có analysis_notes)
+    A->>S: state + analysis_notes
+    S->>W: route (đủ dữ liệu)
+    W->>U: final_answer (kèm citations)
+    Note over S: Mỗi bước đều ghi vào<br/>route_history + trace
+```
+
 ## 1. Thuật ngữ cần biết
 
 | Thuật ngữ gốc | Bản chất khái niệm | Minh hoạ trực quan |
