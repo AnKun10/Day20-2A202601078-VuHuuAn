@@ -81,6 +81,7 @@ flowchart LR
 Luồng một lần chạy multi-agent điển hình (shared state chuyền qua từng bước):
 
 ```mermaid
+%%{init: {"sequence": {"actorFontSize": 20, "messageFontSize": 18, "noteFontSize": 16, "actorMargin": 120, "width": 220, "height": 60, "boxMargin": 12, "messageMargin": 45, "mirrorActors": false}}}%%
 sequenceDiagram
     participant U as User
     participant S as Supervisor
