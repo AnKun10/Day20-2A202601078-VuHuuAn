@@ -50,9 +50,10 @@
   .li b { color:#2e6f4f; }
   .dot { color:#e08a52; font-weight:900; flex:0 0 auto; }
 
-  .pill { display:inline-flex; align-self:flex-start; align-items:center; gap:1.3vmin;
+  .pill { display:block; align-self:flex-start;
           background:#fbeee4; border:.4vmin solid #e08a52; color:#a8531f;
-          font-size:2.3vmin; font-weight:700; padding:1.2vmin 2.4vmin; border-radius:99px; }
+          font-size:2.3vmin; font-weight:700; line-height:1.45;
+          padding:1.2vmin 2.4vmin; border-radius:2vmin; }
 
   .chips { display:flex; flex-wrap:wrap; gap:1.1vmin; }
   .chip { font-size:2vmin; font-weight:700; background:#fff; border:.35vmin solid #d5d9d1;
@@ -423,7 +424,7 @@ iteration &gt;= max_iterations  -&gt; STOP (guardrail)</pre>
     </div>
     <div class="body">
       <div class="main">
-        <div class="pill">Cuối buổi · <b>30'</b> · review chéo theo <code>docs/peer_review_rubric.md</code> — 5 tiêu chí × 0–2 điểm</div>
+        <div class="pill">Cuối buổi (30') — review chéo theo <code>docs/peer_review_rubric.md</code>: 5 tiêu chí, mỗi tiêu chí 0–2 điểm</div>
         <div class="li"><span class="dot">1</span><span><b>0–20'</b> — Đổi bài với bạn bên cạnh: chấm role design · shared state · guardrails · trace · benchmark report</span></div>
         <div class="li"><span class="dot">2</span><span><b>20–30'</b> — Exit ticket (trong <code>docs/lab_guide.md</code>): trả lời 2 câu hỏi</span></div>
         <div class="grid2">
