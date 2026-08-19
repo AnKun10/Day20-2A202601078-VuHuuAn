@@ -81,22 +81,21 @@ flowchart LR
 Luồng một lần chạy multi-agent điển hình (shared state chuyền qua từng bước):
 
 ```mermaid
-%%{init: {"sequence": {"actorFontSize": 20, "messageFontSize": 18, "noteFontSize": 16, "actorMargin": 120, "width": 220, "height": 60, "boxMargin": 12, "messageMargin": 45, "mirrorActors": false}}}%%
-sequenceDiagram
-    participant U as User
-    participant S as Supervisor
-    participant R as Researcher
-    participant A as Analyst
-    participant W as Writer
+flowchart TD
+    U([User gửi query]) --> S1{{"Supervisor kiểm tra state<br/>→ chưa có sources"}}
+    S1 -->|route| R["Researcher<br/>search + tổng hợp nguồn<br/>ghi vào state: sources, research_notes"]
+    R --> S2{{"Supervisor kiểm tra state<br/>→ chưa có analysis_notes"}}
+    S2 -->|route| A["Analyst<br/>đọc research_notes, đánh giá nguồn<br/>ghi vào state: analysis_notes"]
+    A --> S3{{"Supervisor kiểm tra state<br/>→ đủ dữ liệu để viết"}}
+    S3 -->|route| W["Writer<br/>tổng hợp thành final_answer<br/>kèm citations trỏ về sources"]
+    W --> DONE([Trả final_answer cho User])
 
-    U->>S: query
-    S->>R: route (state chưa có sources)
-    R->>S: state + sources + research_notes
-    S->>A: route (chưa có analysis_notes)
-    A->>S: state + analysis_notes
-    S->>W: route (đủ dữ liệu)
-    W->>U: final_answer (kèm citations)
-    Note over S: Mỗi bước đều ghi vào<br/>route_history + trace
+    T["Mỗi bước đều ghi vào<br/>route_history + trace"]
+    S1 -.-> T
+    S2 -.-> T
+    S3 -.-> T
+
+    style T fill:#fff3bf,stroke:#e6b800
 ```
 
 ## 1. Thuật ngữ cần biết
