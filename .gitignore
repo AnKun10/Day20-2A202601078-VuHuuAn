@@ -1,3 +1,4 @@
+.DS_Store
 .venv/
 __pycache__/
 *.pyc
@@ -10,4 +11,5 @@ build/
 *.egg-info/
 reports/*.json
 reports/*.md
+!reports/benchmark_report.md
 !.gitkeep

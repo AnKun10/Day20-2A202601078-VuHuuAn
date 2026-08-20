@@ -153,10 +153,15 @@ Các phần học viên cần tự làm:
 
 Học viên nộp:
 
-1. GitHub repo cá nhân.
-2. Screenshot trace hoặc link trace.
+1. GitHub repo cá nhân — repo này.
+2. Screenshot trace hoặc link trace — xem `docs/trace.png` (LangSmith project
+   `multi-agent-research-lab`: các run `baseline` và `multi-agent` kèm latency,
+   token, cost từng bước).
 3. `reports/benchmark_report.md` so sánh single vs multi-agent.
-4. Một đoạn giải thích failure mode và cách fix.
+4. Một đoạn giải thích failure mode và cách fix — mục "Failure mode gặp phải và
+   cách fix" trong `reports/benchmark_report.md`.
+
+![LangSmith trace](docs/trace.png)
 
 ## References
 
