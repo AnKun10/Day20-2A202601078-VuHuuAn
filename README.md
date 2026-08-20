@@ -88,7 +88,7 @@ python -m multi_agent_research_lab.cli baseline \
   --query "Research GraphRAG state-of-the-art and write a 500-word summary"
 ```
 
-Lệnh này chỉ chạy khung baseline tối giản. Học viên cần tự triển khai logic LLM thực tế trong `src/multi_agent_research_lab/services/llm_client.py`.
+Baseline gọi LLM thật (một completion duy nhất, không tool) và in kèm latency/token/cost.
 
 ### 5. Chạy multi-agent skeleton
 
@@ -97,7 +97,18 @@ python -m multi_agent_research_lab.cli multi-agent \
   --query "Research GraphRAG state-of-the-art and write a 500-word summary"
 ```
 
-Mặc định lệnh sẽ báo các `TODO` cần làm. Đây là chủ đích của starter repo.
+Workflow chạy đủ vòng Supervisor → Researcher (Tavily/mock) → Analyst → Writer → Critic,
+in `final_answer` kèm `route_history`, token và cost. Trace từng bước xem trên LangSmith.
+
+### 6. Chạy benchmark single vs multi-agent
+
+```bash
+python -m multi_agent_research_lab.cli benchmark
+# hoặc tự chọn query: ... benchmark -q "câu hỏi 1" -q "câu hỏi 2" --no-with-judge
+```
+
+Kết quả ghi vào `reports/benchmark_report.md` (latency, cost, quality LLM-judge,
+citation coverage, failure rate).
 
 ## Milestones trong 2 giờ lab
 

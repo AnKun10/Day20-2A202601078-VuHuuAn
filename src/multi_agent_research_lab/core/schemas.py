@@ -12,6 +12,7 @@ class AgentName(StrEnum):
     ANALYST = "analyst"
     WRITER = "writer"
     CRITIC = "critic"
+    SINGLE = "single"
 
 
 class ResearchQuery(BaseModel):
